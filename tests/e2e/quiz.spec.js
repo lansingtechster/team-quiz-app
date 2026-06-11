@@ -68,6 +68,21 @@ test("a correct answer earns a point and friendly feedback", async ({
   await expect(page.locator("#next-btn")).toBeVisible();
 });
 
+test("a correct answer auto-advances to the next question after a short countdown", async ({
+  page,
+}) => {
+  await page.locator("#start-btn").click();
+
+  const answer = await correctAnswerFor(page);
+  const questionLabel = await page.locator("#progress").textContent();
+
+  await page.locator("#answers button", { hasText: answer }).first().click();
+  await page.waitForTimeout(3400);
+
+  await expect(page.locator("#progress")).not.toHaveText(questionLabel);
+  await expect(page.locator("#progress")).toContainText("Question 2 of");
+});
+
 test("a wrong answer reveals the correct one and locks the buttons", async ({
   page,
 }) => {
