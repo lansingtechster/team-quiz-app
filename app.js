@@ -18,10 +18,14 @@ const feedbackEl = document.getElementById("feedback");
 const resultScoreEl = document.getElementById("result-score");
 const resultTextEl = document.getElementById("result-text");
 
+const AUTO_ADVANCE_DELAY = 3;
+
 let selectedQuestions = [];
 let currentQuestionIndex = 0;
 let score = 0;
 let answered = false;
+let autoAdvanceTimer = null;
+let autoAdvanceCountdown = AUTO_ADVANCE_DELAY;
 
 function shuffle(items) {
   const copy = [...items];
@@ -43,6 +47,38 @@ function validateQuestionData() {
   });
 
   return valid && quizQuestions.length >= questionsPerRun;
+}
+
+function clearAutoAdvance() {
+  if (autoAdvanceTimer) {
+    clearInterval(autoAdvanceTimer);
+    autoAdvanceTimer = null;
+  }
+  autoAdvanceCountdown = AUTO_ADVANCE_DELAY;
+}
+
+function resetNextButton() {
+  clearAutoAdvance();
+  nextBtn.hidden = true;
+  nextBtn.textContent = "Next Question";
+}
+
+function startAutoAdvance() {
+  clearAutoAdvance();
+  autoAdvanceCountdown = AUTO_ADVANCE_DELAY;
+  nextBtn.textContent = `Next Question (${AUTO_ADVANCE_DELAY})`;
+
+  autoAdvanceTimer = setInterval(() => {
+    autoAdvanceCountdown -= 1;
+
+    if (autoAdvanceCountdown > 0) {
+      nextBtn.textContent = `Next Question (${autoAdvanceCountdown})`;
+      return;
+    }
+
+    clearAutoAdvance();
+    nextBtn.click();
+  }, 1000);
 }
 
 function startQuiz() {
@@ -93,6 +129,7 @@ function startQuiz() {
     return picked;
   }
 
+  clearAutoAdvance();
   selectedQuestions = pickProgressiveQuestions();
   currentQuestionIndex = 0;
   score = 0;
@@ -101,13 +138,14 @@ function startQuiz() {
   startScreen.hidden = true;
   resultScreen.hidden = true;
   quizScreen.hidden = false;
+  resetNextButton();
 
   renderQuestion();
 }
 
 function renderQuestion() {
   answered = false;
-  nextBtn.hidden = true;
+  resetNextButton();
   feedbackEl.textContent = "";
   feedbackEl.className = "feedback";
 
@@ -150,14 +188,17 @@ function selectAnswer(clickedButton, selectedOption) {
     clickedButton.classList.add("correct");
     feedbackEl.textContent = "Correct! Great job!";
     feedbackEl.classList.add("good");
+    nextBtn.hidden = false;
+    startAutoAdvance();
   } else {
     clickedButton.classList.add("wrong");
     feedbackEl.textContent = `Not quite. The correct answer is ${current.answer}.`;
     feedbackEl.classList.add("bad");
+    nextBtn.hidden = false;
+    nextBtn.textContent = "Next Question";
   }
 
   scoreEl.textContent = `Score: ${score}`;
-  nextBtn.hidden = false;
   nextBtn.focus();
 }
 
@@ -178,8 +219,10 @@ function showResults() {
 }
 
 function nextQuestion() {
+  clearAutoAdvance();
   currentQuestionIndex += 1;
   if (currentQuestionIndex >= questionsPerRun) {
+    nextBtn.hidden = true;
     showResults();
     return;
   }
