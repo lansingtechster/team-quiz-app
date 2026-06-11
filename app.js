@@ -52,7 +52,48 @@ function startQuiz() {
     return;
   }
 
-  selectedQuestions = shuffle(quizQuestions).slice(0, questionsPerRun);
+  // Choose questions so difficulty increases as the quiz progresses.
+  function groupByDifficulty(list) {
+    const buckets = { easy: [], medium: [], hard: [] };
+    list.forEach((q) => {
+      const d = q.difficulty || "medium";
+      if (!buckets[d]) buckets[d] = [];
+      buckets[d].push(q);
+    });
+    // shuffle each bucket so selection is randomized
+    Object.keys(buckets).forEach((k) => (buckets[k] = shuffle(buckets[k])));
+    return buckets;
+  }
+
+  function pickProgressiveQuestions() {
+    const buckets = groupByDifficulty(quizQuestions);
+    const picked = [];
+    for (let i = 0; i < questionsPerRun; i += 1) {
+      const ratio = questionsPerRun === 1 ? 0 : i / (questionsPerRun - 1);
+      let desired;
+      if (ratio < 0.4) desired = "easy";
+      else if (ratio < 0.8) desired = "medium";
+      else desired = "hard";
+
+      const fallbackOrder = [desired, "medium", "easy", "hard"];
+      let chosen = null;
+      for (const key of fallbackOrder) {
+        if (buckets[key] && buckets[key].length > 0) {
+          chosen = buckets[key].pop();
+          break;
+        }
+      }
+      // as a last resort, pick any remaining question
+      if (!chosen) {
+        const remaining = shuffle(quizQuestions.filter((q) => !picked.includes(q)));
+        chosen = remaining[0];
+      }
+      picked.push(chosen);
+    }
+    return picked;
+  }
+
+  selectedQuestions = pickProgressiveQuestions();
   currentQuestionIndex = 0;
   score = 0;
   answered = false;
