@@ -46,6 +46,27 @@ without a review. Instead, your work arrives here through a **pull request**.
    update your fork with the **Sync fork** button so you're building on the
    latest team code.
 
+## Tests run on every pull request
+
+When you open a PR, GitHub Actions automatically runs two checks:
+
+- **Unit tests** — make sure every quiz question is set up correctly and
+  `index.html` still has the elements `app.js` needs
+- **End-to-end tests** — open the quiz in a real browser and play through it
+
+Green checks mean your change didn't break the quiz — wait for them before
+asking for a review. If a check turns red, click **Details** to see exactly
+what failed.
+
+You can also run the tests yourself in your Codespace:
+
+```bash
+npm install        # first time only
+npm test           # run everything
+npm run test:unit  # just the quick checks
+npm run test:e2e   # just the browser tests
+```
+
 ## If your PR has a merge conflict
 
 That just means a teammate's merged change touched the same lines you did.
@@ -58,6 +79,10 @@ instructor if you get stuck — conflicts are normal, not a mistake.
 - `style.css` — styling
 - `questions.js` — quiz question data
 - `app.js` — game logic
+- `tests/unit/` — quick checks of the question data and page structure
+- `tests/e2e/` — browser tests that play through the quiz
+- `.github/workflows/tests.yml` — runs both test suites on every PR and
+  every push to main
 - `.devcontainer/devcontainer.json` — Codespace setup (Copilot, Live Preview,
   Playwright MCP)
 - `.vscode/mcp.json` — Playwright MCP config so AI can "see" the app
