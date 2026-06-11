@@ -15,7 +15,7 @@ without a review. Instead, your work arrives here through a **pull request**.
 
 ## The team workflow
 
-1. **Fork this repo** — click **Fork** at the top right, just like Workshop 1.
+1. If you own the repo, you don't have to fork, otherwise, **Fork this repo** — click **Fork** at the top right, just like Workshop 1.
    You now have your own copy at `https://github.com/<your-username>/team-quiz-app`.
 2. **Open a Codespace on your fork** — **Code** → **Codespaces** → **Create
    codespace on main**.
